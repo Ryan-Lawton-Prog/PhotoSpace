@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"image"
 
 	"ryanlawton.art/photospace-api/models"
 	"ryanlawton.art/photospace-api/photo"
@@ -18,10 +17,10 @@ func NewPhotoUseCase(photoRepo photo.Repository) *PhotoUseCase {
 	}
 }
 
-func (b PhotoUseCase) UploadPhoto(ctx context.Context, user *models.User, photo image.Image, extension string) error {
+func (b PhotoUseCase) UploadPhoto(ctx context.Context, user *models.User, photo []byte, filename string) error {
 	pm := &models.Photo{
-		Photo:     photo,
-		Extension: extension,
+		Photo:    photo,
+		Filename: filename,
 	}
 
 	return b.photoRepo.UploadPhoto(ctx, user, pm)

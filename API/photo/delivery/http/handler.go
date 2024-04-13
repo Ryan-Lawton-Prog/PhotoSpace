@@ -1,7 +1,7 @@
 package http
 
 import (
-	"image"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -32,15 +32,8 @@ type createInput struct {
 }
 
 func (h *Handler) Upload(c *gin.Context) {
-	// inp := new(createInput)
-	// if err := c.Bind(&inp); err != nil {
-	// 	c.JSON(400, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// user := c.MustGet(auth.CtxUserKey).(*models.User)
-
-	file, _, err := c.Request.FormFile("photo")
+	file, header, err := c.Request.FormFile("photo")
+	defer file.Close()
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -49,9 +42,19 @@ func (h *Handler) Upload(c *gin.Context) {
 
 	user := c.MustGet(auth.CtxUserKey).(*models.User)
 
-	photo, extension, err := image.Decode(file)
+	fileb := make([]byte, header.Size)
+	_, err = file.Read(fileb)
 
-	if err := h.useCase.UploadPhoto(c, user, photo, extension); err != nil {
+	log.Printf("Fileb: %v\n", fileb)
+
+	if err != nil {
+		log.Printf("Error reading file: %s\n", err)
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.useCase.UploadPhoto(c, user, fileb, header.Filename); err != nil {
+		log.Printf("Error uploading photo: %s\n", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
@@ -74,14 +77,18 @@ func (h *Handler) Fetch(c *gin.Context) {
 
 	user := c.MustGet(auth.CtxUserKey).(*models.User)
 
-	photo, err := h.useCase.FetchPhoto(c.Request.Context(), user, inp.PhotoID)
+	p, err := h.useCase.FetchPhoto(c.Request.Context(), user, inp.PhotoID)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, photo)
+	log.Printf("Filename: %s\n", p.Filename)
+	log.Printf("photo: %s", p.Photo)
+
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", p.Filename))
+	c.Data(http.StatusOK, "application/octet-stream", p.Photo)
 }
 
 // func NewHandler(useCase photo.UseCase) *Handler {
