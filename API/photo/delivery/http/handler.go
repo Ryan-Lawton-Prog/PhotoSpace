@@ -45,8 +45,6 @@ func (h *Handler) Upload(c *gin.Context) {
 	fileb := make([]byte, header.Size)
 	_, err = file.Read(fileb)
 
-	log.Printf("Fileb: %v\n", fileb)
-
 	if err != nil {
 		log.Printf("Error reading file: %s\n", err)
 		c.JSON(500, gin.H{"error": err.Error()})

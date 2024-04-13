@@ -10,3 +10,10 @@ mongo:
   name: "testdb"
   user_collection: "users"
   photo_collection: "photos"
+
+photo:
+  upload_dir: "/tmp/test"
+  upload_allowed_types:
+    - "image/jpeg"
+    - "image/png"
+    - "image/gif"

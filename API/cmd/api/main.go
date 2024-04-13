@@ -15,6 +15,8 @@ func main() {
 
 	app := server.NewApp()
 
+	log.Printf("Starting server on port %s", viper.GetString("port"))
+
 	if err := app.Run(viper.GetString("port")); err != nil {
 		log.Fatalf("%s", err.Error())
 	}

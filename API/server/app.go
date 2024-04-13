@@ -93,15 +93,12 @@ func (a *App) Run(port string) error {
 }
 
 func initDB() *mongo.Database {
-	client, err := mongo.NewClient(options.Client().ApplyURI(viper.GetString("mongo.uri")))
-	if err != nil {
-		log.Fatalf("Error occured while establishing connection to mongoDB")
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err = client.Connect(ctx)
+	log.Printf("Connecting to mongoDB at uri: %s", viper.GetString("mongo.uri"))
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(viper.GetString("mongo.uri")))
 	if err != nil {
 		log.Fatal(err)
 	}

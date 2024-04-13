@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
 	"ryanlawton.art/photospace-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var uploadPath = os.TempDir()
+var uploadPath string
 
 type Photo struct {
 	ID       primitive.ObjectID `bson:"_id",omitempty`
@@ -29,6 +30,14 @@ type PhotoRepository struct {
 }
 
 func NewPhotoRepository(db *mongo.Database, collection string) *PhotoRepository {
+	uploadPath = viper.GetString("photo.upload_dir")
+
+	if uploadPath == "" {
+		uploadPath = os.TempDir()
+	}
+
+	log.Printf("Upload path: %s", uploadPath)
+
 	return &PhotoRepository{
 		db: db.Collection(collection),
 	}
@@ -36,6 +45,7 @@ func NewPhotoRepository(db *mongo.Database, collection string) *PhotoRepository 
 
 // UploadPhoto uploads a photo to the database
 func (pr *PhotoRepository) UploadPhoto(ctx context.Context, user *models.User, pm *models.Photo) error {
+
 	pm.UserID = user.ID
 
 	newPhotoId := primitive.NewObjectID()
@@ -44,7 +54,7 @@ func (pr *PhotoRepository) UploadPhoto(ctx context.Context, user *models.User, p
 	path, err := saveImageToDisk(pm)
 	if err != nil {
 		log.Printf("Error saving image to disk: %s", err.Error())
-		return nil
+		return err
 	}
 
 	model := toModel(pm)
@@ -128,8 +138,6 @@ func toPhoto(p *Photo) (*models.Photo, error) {
 
 	fileBytes := make([]byte, stat.Size())
 	f.Read(fileBytes)
-
-	log.Printf("FileBytes: %s", fileBytes)
 
 	return &models.Photo{
 		ID:       p.ID.Hex(),
