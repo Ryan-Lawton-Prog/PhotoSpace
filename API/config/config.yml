@@ -12,7 +12,7 @@ mongo:
   photo_collection: "photos"
 
 photo:
-  upload_dir: "/tmp/test"
+  upload_dir: "/bucket"
   upload_allowed_types:
     - "image/jpeg"
     - "image/png"
