@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
 	"image"
 	"image/png"
@@ -18,11 +19,20 @@ import (
 )
 
 func TestUpload(t *testing.T) {
+	// Set up test data
 	testUser := &models.User{
 		Username: "testuser",
 		Password: "testpass",
 	}
 
+	buf := new(bytes.Buffer)
+	img := image.NewRGBA(image.Rect(0, 1, 1, 0))
+	err := png.Encode(buf, img)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Set up router
 	r := gin.Default()
 	group := r.Group("/api", func(c *gin.Context) {
 		c.Set(auth.CtxUserKey, testUser)
@@ -31,15 +41,6 @@ func TestUpload(t *testing.T) {
 	uc := new(usecase.PhotoUseCaseMock)
 
 	RegisterHTTPEndpoints(group, uc)
-
-	inp := &createInput{
-		Photo: []byte("testphoto"),
-	}
-
-	_, err := json.Marshal(inp)
-	assert.NoError(t, err)
-
-	uc.On("UploadPhoto", testUser, inp.Photo).Return(nil)
 
 	// encode image to it's type
 	// Set up a pipe to avoid buffering
@@ -58,9 +59,6 @@ func TestUpload(t *testing.T) {
 			t.Error(err)
 		}
 
-		// https://yourbasic.org/golang/create-image/
-		img := image.NewRGBA(image.Rect(0, 1, 1, 0))
-
 		// Encode() takes an io.Writer.
 		// We pass the multipart field
 		// 'fileupload' that we defined
@@ -72,11 +70,22 @@ func TestUpload(t *testing.T) {
 		}
 	}()
 
+	inp := &createInput{
+		Photo: buf.Bytes(),
+	}
+
+	// Mock the use case
+	uc.On("UploadPhoto", testUser, inp.Photo, "someimg.png").Return(nil)
+
+	// Create a new request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/photos", pr)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-
 	r.ServeHTTP(w, req)
+
+	// Test implementation
+	_, err = json.Marshal(inp)
+	assert.NoError(t, err)
 
 	assert.Equal(t, 201, w.Code)
 }

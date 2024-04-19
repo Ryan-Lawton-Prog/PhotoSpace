@@ -88,38 +88,3 @@ func (h *Handler) Fetch(c *gin.Context) {
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", p.Filename))
 	c.Data(http.StatusOK, "application/octet-stream", p.Photo)
 }
-
-// func NewHandler(useCase photo.UseCase) *Handler {
-// 	return &Handler{
-// 		useCase: useCase,
-// 	}
-// }
-
-// func (h *Handler) Upload(c *gin.Context) {
-// 	photo, err := c.FormFile("photo")
-
-// 	if err != nil {
-// 		c.JSON(400, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
-// 	f, _ := photo.Open()
-// 	fmt.Printf("f: %v\n", f)
-
-// 	//user := c.MustGet(auth.CtxUserKey).(*models.User)
-
-// 	// for _, file := range files {
-// 	// 	log.Println(file.Filename)
-// 	// 	f, _ := file.Open()
-// 	// 	fmt.Printf("f: %v\n", f)
-// 	// 	// if err := h.useCase.UploadPhoto(c, user, f.Read()); err != nil {
-// 	// 	// 	c.JSON(500, gin.H{"error": err.Error()})
-// 	// 	// 	return
-// 	// 	// }
-
-// 	// 	// Upload the file to specific dst.
-// 	// 	//c.SaveUploadedFile(file, dst)
-// 	// }
-
-// 	c.Status(http.StatusCreated)
-// }

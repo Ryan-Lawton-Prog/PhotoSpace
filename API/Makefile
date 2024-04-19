@@ -5,4 +5,8 @@ run: build
 	docker-compose up --build server
 
 test:	
-	go test -v ./...
+	go test -v ./... -coverprofile=.test/coverage.out
+
+coverage: test
+	go tool cover -html=.test/coverage.out
+	

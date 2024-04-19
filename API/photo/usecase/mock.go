@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"image"
 
 	"github.com/stretchr/testify/mock"
 	"ryanlawton.art/photospace-api/models"
@@ -12,8 +11,8 @@ type PhotoUseCaseMock struct {
 	mock.Mock
 }
 
-func (p PhotoUseCaseMock) UploadPhoto(ctx context.Context, user *models.User, photo image.Image, extension string) error {
-	args := p.Called(user, photo, extension)
+func (p PhotoUseCaseMock) UploadPhoto(ctx context.Context, user *models.User, photo []byte, filename string) error {
+	args := p.Called(user, photo, filename)
 
 	return args.Error(0)
 }

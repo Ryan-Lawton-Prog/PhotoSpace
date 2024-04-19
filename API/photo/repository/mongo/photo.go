@@ -167,13 +167,3 @@ func saveImageToDisk(p *models.Photo) (string, error) {
 
 	return newPath, nil
 }
-
-// func toPhotos(ps []*Photo) []*models.Photo {
-// 	out := make([]*models.Photo, len(ps))
-
-// 	for i, b := range ps {
-// 		out[i] = toPhoto(b)
-// 	}
-
-// 	return out
-// }
