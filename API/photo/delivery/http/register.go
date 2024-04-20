@@ -8,10 +8,11 @@ import (
 func RegisterHTTPEndpoints(router *gin.RouterGroup, uc photo.UseCase) {
 	h := NewHandler(uc)
 
-	photos := router.Group("/photos")
+	photos := router.Group("/photo")
 	{
 		photos.POST("", h.Upload)
-		photos.GET("", h.Fetch)
+		photos.GET("/ids", h.FetchAllIDs)
 		// photos.DELETE("", h.Delete)
+		photos.GET("", h.Fetch)
 	}
 }

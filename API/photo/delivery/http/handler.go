@@ -65,13 +65,11 @@ type fetchInput struct {
 }
 
 func (h *Handler) Fetch(c *gin.Context) {
-	log.Printf("Hello")
 	inp := new(fetchInput)
 	if err := c.BindJSON(inp); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	log.Printf("Input: %s\n", inp)
 
 	user := c.MustGet(auth.CtxUserKey).(*models.User)
 
@@ -82,9 +80,18 @@ func (h *Handler) Fetch(c *gin.Context) {
 		return
 	}
 
-	log.Printf("Filename: %s\n", p.Filename)
-	log.Printf("photo: %s", p.Photo)
-
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", p.Filename))
 	c.Data(http.StatusOK, "application/octet-stream", p.Photo)
+}
+
+func (h *Handler) FetchAllIDs(c *gin.Context) {
+	user := c.MustGet(auth.CtxUserKey).(*models.User)
+
+	ids, err := h.useCase.FetchPhotoAllIDs(c.Request.Context(), user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"photo_ids": ids})
 }

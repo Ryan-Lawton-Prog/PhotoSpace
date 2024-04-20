@@ -32,3 +32,7 @@ func (b PhotoUseCase) FetchPhoto(ctx context.Context, user *models.User, photoId
 	}
 	return b.photoRepo.FetchPhoto(ctx, user, pm)
 }
+
+func (b PhotoUseCase) FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error) {
+	return b.photoRepo.FetchPhotoAllIDs(ctx, user)
+}

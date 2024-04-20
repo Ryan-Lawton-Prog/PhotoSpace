@@ -9,5 +9,6 @@ import (
 type Repository interface {
 	UploadPhoto(ctx context.Context, user *models.User, pm *models.Photo) error
 	FetchPhoto(ctx context.Context, user *models.User, pm *models.Photo) (*models.Photo, error)
+	FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error)
 	// FetchAlbum(ctx context.Context, user *models.User, id string) error
 }

@@ -36,8 +36,6 @@ func NewPhotoRepository(db *mongo.Database, collection string) *PhotoRepository 
 		uploadPath = os.TempDir()
 	}
 
-	log.Printf("Upload path: %s", uploadPath)
-
 	return &PhotoRepository{
 		db: db.Collection(collection),
 	}
@@ -77,8 +75,6 @@ func (pr *PhotoRepository) FetchPhoto(ctx context.Context, user *models.User, pm
 
 	model := toModel(pm)
 
-	log.Println(model)
-
 	res, err := pr.db.Find(ctx, bson.D{{"user_id", model.UserID}, {"_id", model.ID}})
 	if err != nil {
 		return nil, err
@@ -86,14 +82,9 @@ func (pr *PhotoRepository) FetchPhoto(ctx context.Context, user *models.User, pm
 
 	defer res.Close(ctx)
 
-	log.Println(res)
-
 	photo := new(Photo)
 
-	log.Println("Generating photo")
-
 	for res.Next(ctx) {
-		log.Println("Decoding photo")
 		err := res.Decode(photo)
 		if err != nil {
 			log.Printf("Error decoding photo: %s", err.Error())
@@ -101,9 +92,34 @@ func (pr *PhotoRepository) FetchPhoto(ctx context.Context, user *models.User, pm
 		}
 	}
 
-	log.Println(photo)
-
 	return toPhoto(photo)
+}
+
+// FetchPhotoAllIDs fetches all photo IDs from the database
+func (pr *PhotoRepository) FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error) {
+	uid, _ := primitive.ObjectIDFromHex(user.ID)
+
+	res, err := pr.db.Find(ctx, bson.D{{"user_id", uid}})
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Close(ctx)
+
+	var photoIDs []string
+
+	for res.Next(ctx) {
+		photo := new(Photo)
+		err := res.Decode(photo)
+		if err != nil {
+			log.Printf("Error decoding photo: %s", err.Error())
+			return nil, err
+		}
+
+		photoIDs = append(photoIDs, photo.ID.Hex())
+	}
+
+	return photoIDs, nil
 }
 
 func toModel(p *models.Photo) *Photo {
@@ -125,9 +141,6 @@ func toPhoto(p *Photo) (*models.Photo, error) {
 		return nil, err
 	}
 	defer f.Close()
-
-	log.Printf("Opening file: %s", p.PhotoURL)
-	log.Printf("File: %s", f.Name())
 
 	// Get the file size
 	stat, err := f.Stat()
@@ -152,7 +165,6 @@ func saveImageToDisk(p *models.Photo) (string, error) {
 	extension := strings.Split(p.Filename, ".")[1]
 	newFileName := p.ID + "." + extension
 	newPath := filepath.Join(uploadPath, newFileName)
-	fmt.Printf("FileType: %s, File: %s\n", extension, newPath)
 
 	newFile, err := os.Create(newPath)
 	if err != nil {

@@ -22,3 +22,9 @@ func (p PhotoUseCaseMock) FetchPhoto(ctx context.Context, user *models.User, pho
 
 	return args.Get(0).(*models.Photo), args.Error(1)
 }
+
+func (p PhotoUseCaseMock) FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error) {
+	args := p.Called(user)
+
+	return args.Get(0).([]string), args.Error(1)
+}
