@@ -34,7 +34,6 @@ jobs:
       working-directory: ./API
       run: go test -v ./API/...
     - name: Upload Go test results
-      working-directory: ./API
       uses: actions/upload-artifact@v4
       with:
         name: Go-results-${{ matrix.go-version }}
