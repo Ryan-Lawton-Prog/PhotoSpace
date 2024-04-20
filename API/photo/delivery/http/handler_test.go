@@ -79,7 +79,7 @@ func TestUpload(t *testing.T) {
 
 	// Create a new request
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/photos", pr)
+	req, _ := http.NewRequest("POST", "/api/photo", pr)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	r.ServeHTTP(w, req)
 
