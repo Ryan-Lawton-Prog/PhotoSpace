@@ -21,18 +21,13 @@ jobs:
       with:
         go-version: '1.22.x'
 
-    - name: Install dependencies
-      working-directory: ./API
-      run: |
-        go get .
-
     - name: Build
       working-directory: ./API
-      run: go build -v ./API/cmd/api/main.go
+      run: go build -v ./cmd/api/main.go
 
     - name: Test
       working-directory: ./API
-      run: go test -v ./API/...
+      run: go test -v ./...
     - name: Upload Go test results
       uses: actions/upload-artifact@v4
       with:
