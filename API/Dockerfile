@@ -4,4 +4,4 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY ./.bin/app .
-COPY ./config/ ./config/
+COPY ./config/docker-config.yml ./config/config.yml
