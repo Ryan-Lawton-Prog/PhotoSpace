@@ -20,6 +20,7 @@ import (
 	authmongo "ryanlawton.art/photospace-api/auth/repository/mongo"
 	authusecase "ryanlawton.art/photospace-api/auth/usecase"
 	photohttp "ryanlawton.art/photospace-api/photo/delivery/http"
+	photobucket "ryanlawton.art/photospace-api/photo/repository/bucket"
 	photomongo "ryanlawton.art/photospace-api/photo/repository/mongo"
 	photousecase "ryanlawton.art/photospace-api/photo/usecase"
 )
@@ -36,9 +37,13 @@ func NewApp() *App {
 
 	userRepo := authmongo.NewUserRepository(db, viper.GetString("mongo.user_collection"))
 	photoRepo := photomongo.NewPhotoRepository(db, viper.GetString("mongo.photo_collection"))
+	bucketRepo := photobucket.NewBucketRepository(viper.GetString("photo.upload_dir"))
 
 	return &App{
-		photoUC: photousecase.NewPhotoUseCase(photoRepo),
+		photoUC: photousecase.NewPhotoUseCase(
+			photoRepo,
+			bucketRepo,
+		),
 		authUC: authusecase.NewAuthUseCase(
 			userRepo,
 			viper.GetString("auth.hash_salt"),
