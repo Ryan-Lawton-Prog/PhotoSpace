@@ -2,3 +2,4 @@ API/.bin/*
 API/.data/*
 API/.test/*
 API/tmp/*
+*/coverage.out

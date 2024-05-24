@@ -8,31 +8,48 @@ import (
 )
 
 type PhotoUseCase struct {
-	photoRepo photo.Repository
+	metadataRepo photo.MetadataRepository
+	bucketRepo   photo.BucketRepository
 }
 
-func NewPhotoUseCase(photoRepo photo.Repository) *PhotoUseCase {
+func NewPhotoUseCase(metadataRepo photo.MetadataRepository, bucketRepo photo.BucketRepository) *PhotoUseCase {
 	return &PhotoUseCase{
-		photoRepo: photoRepo,
+		metadataRepo: metadataRepo,
+		bucketRepo:   bucketRepo,
 	}
 }
 
-func (b PhotoUseCase) UploadPhoto(ctx context.Context, user *models.User, photo []byte, filename string) error {
-	pm := &models.Photo{
-		Photo:    photo,
+func (b PhotoUseCase) UploadPhoto(ctx context.Context, user *models.User, blob *models.PhotoBlob, filename string) (string, error) {
+	pm := &models.PhotoMetadata{
+		UserID:   user.ID,
 		Filename: filename,
 	}
 
-	return b.photoRepo.UploadPhoto(ctx, user, pm)
+	err := b.bucketRepo.UploadPhoto(ctx, blob, pm)
+	if err != nil {
+		return "Error Uploading File to Bucket", err
+	}
+
+	return b.metadataRepo.UploadPhoto(ctx, pm)
 }
 
-func (b PhotoUseCase) FetchPhoto(ctx context.Context, user *models.User, photoId string) (*models.Photo, error) {
-	pm := &models.Photo{
-		ID: photoId,
+func (b PhotoUseCase) FetchPhoto(ctx context.Context, user *models.User, photoId string) (*models.PhotoMetadata, models.PhotoBlob, error) {
+	pm := &models.PhotoMetadata{
+		ID:     photoId,
+		UserID: user.ID,
 	}
-	return b.photoRepo.FetchPhoto(ctx, user, pm)
+
+	if err := b.metadataRepo.FetchPhoto(ctx, pm); err != nil {
+		return nil, nil, err
+	}
+	blob, err := b.bucketRepo.FetchPhoto(ctx, pm)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return pm, blob, nil
 }
 
 func (b PhotoUseCase) FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error) {
-	return b.photoRepo.FetchPhotoAllIDs(ctx, user)
+	return b.metadataRepo.FetchPhotoAllIDs(ctx, user)
 }
