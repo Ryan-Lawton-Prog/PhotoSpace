@@ -22,3 +22,6 @@
 Delete bound address
 `lsof -ni tcp:8000`
 `kill {pid}`
+
+##### Install Dependencies
+`go mod tidy`
