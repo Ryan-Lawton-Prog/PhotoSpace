@@ -1,11 +1,6 @@
 package loginPage
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"image/color"
-	"net/http"
 	"time"
 
 	"gioui.org/app"
@@ -14,7 +9,9 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"ryanlawton.art/photospace-ui/logic"
 	"ryanlawton.art/photospace-ui/models"
+	"ryanlawton.art/photospace-ui/widgets/colors"
 	errorWidget "ryanlawton.art/photospace-ui/widgets/error"
 	"ryanlawton.art/photospace-ui/widgets/insets"
 	"ryanlawton.art/photospace-ui/widgets/shapes"
@@ -26,10 +23,6 @@ const (
 	signupButtonText = "Sign Up"
 )
 
-const (
-	photoSpaceURL = "http://localhost:8000"
-)
-
 type Widgets struct {
 	signupButton widget.Clickable
 	loginButton  widget.Clickable
@@ -37,16 +30,11 @@ type Widgets struct {
 	password     widget.Editor
 }
 
-type login struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type Login struct {
 	widgets            Widgets
 	pageQueue          chan models.PageId
 	errorMessages      errorWidget.ErrorMessages
-	loginRequestQueue  chan login
+	loginRequestQueue  chan logic.SignInBody
 	errorMessagesQueue chan error
 	loggingIn          bool
 }
@@ -56,14 +44,14 @@ func NewPage(pageQueue *chan models.PageId, window *app.Window) *Login {
 		widgets:            Widgets{},
 		pageQueue:          *pageQueue,
 		errorMessages:      errorWidget.NewErrorMessageWidget(window.Invalidate),
-		loginRequestQueue:  make(chan login),
+		loginRequestQueue:  make(chan logic.SignInBody),
 		errorMessagesQueue: make(chan error),
 	}
 }
 
 func (page *Login) handleInput(gtx *models.C) {
 	if page.widgets.loginButton.Clicked(*gtx) {
-		page.loginRequestQueue <- login{
+		page.loginRequestQueue <- logic.SignInBody{
 			Username: page.widgets.username.Text(),
 			Password: page.widgets.password.Text(),
 		}
@@ -76,19 +64,14 @@ func (page *Login) StartRoutines(window *app.Window) {
 	go func() {
 		for login := range page.loginRequestQueue {
 			page.loggingIn = true
-			body, _ := json.Marshal(login)
-			resp, err := http.Post(photoSpaceURL+"/auth/sign-in", "application/json", bytes.NewBuffer(body))
+
+			success, err := logic.SignIn(login)
 			if err != nil {
 				page.errorMessagesQueue <- err
-			}
-
-			if resp.StatusCode != http.StatusOK {
-				page.errorMessagesQueue <- errors.New("failed login")
-			}
-
-			if resp.StatusCode == http.StatusOK {
+			} else if success {
 				page.pageQueue <- models.Home
 			}
+
 			page.loggingIn = false
 		}
 	}()
@@ -116,8 +99,9 @@ func (page *Login) Layout(gtx *models.C, th *material.Theme) {
 				return shapes.DrawText(&gtx, shapes.Params{
 					Theme:     th,
 					Text:      loginTitleText,
-					Color:     color.NRGBA{R: 127, G: 0, B: 0, A: 255},
+					Color:     colors.MainTheme.Gray10,
 					Alignment: text.Middle,
+					Shadow:    true,
 				})
 			},
 		),
@@ -158,8 +142,12 @@ func (page *Login) Layout(gtx *models.C, th *material.Theme) {
 					func(gtx models.C) models.D {
 						loginMat := material.Button(th, &page.widgets.loginButton, loginButtonText)
 						loginMat.Inset = insets.LargeButton
+						loginMat.Background = colors.MainTheme.Primary5
+						loginMat.Color = colors.White
 						signupMat := material.Button(th, &page.widgets.signupButton, signupButtonText)
 						signupMat.Inset = insets.LargeButton
+						signupMat.Background = colors.MainTheme.Primary5
+						signupMat.Color = colors.White
 						loginBtn := layout.Rigid(loginMat.Layout)
 						signupBtn := layout.Rigid(signupMat.Layout)
 

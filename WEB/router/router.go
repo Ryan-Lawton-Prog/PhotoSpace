@@ -18,10 +18,12 @@ type Router struct {
 }
 
 func NewRouter(window *app.Window, initPage models.PageId) Router {
+	theme := *material.NewTheme()
+	theme.Face = "Times New Roman, Georgia, serif"
 	r := Router{
 		Window:    window,
 		PageQueue: make(chan models.PageId),
-		Theme:     *material.NewTheme(),
+		Theme:     theme,
 	}
 
 	r.Page, _ = page.GetPageFactory(initPage, &r.PageQueue, window)
