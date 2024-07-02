@@ -1,5 +1,5 @@
-API/.bin/*
-API/.data/*
-API/.test/*
-API/tmp/*
+.bin/*
+.data/*
+.test/*
+tmp/*
 */coverage.out
