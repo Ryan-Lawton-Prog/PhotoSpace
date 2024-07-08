@@ -9,6 +9,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"ryanlawton.art/photospace/internal/app/utils"
 	"ryanlawton.art/photospace/internal/pkg/themes"
 )
 
@@ -22,6 +23,8 @@ func DrawFormTextBox(tb *widget.Editor, params Params) layout.Widget {
 		tb.Alignment = text.Middle
 		tb.LineHeight = unit.Sp(30)
 		textBox.LineHeight = unit.Sp(50)
+		// todo: text size constants
+		textBox.TextSize = 24
 		tb.LineHeightScale = 5
 
 		box := textBox.Layout(gtx)
@@ -34,14 +37,13 @@ func DrawFormTextBox(tb *widget.Editor, params Params) layout.Widget {
 			Color: themes.MainTheme.Gray0,
 		})()
 
-		//textBoxD.Size.Y = max(textBoxD.Size.Y, 100)
 		if params.Shadow {
-			offset := image.Pt(0, box.Size.Y-4)
+			offset := image.Pt(0, box.Size.Y-(2*int(gtx.Metric.PxPerDp)))
 			offsetPop := op.Offset(offset).Push(gtx.Ops)
 			DrawSquare(&gtx, SquareParams{
 				Size: Size{
 					Width:  box.Size.X,
-					Height: 20,
+					Height: 10 * int(gtx.Metric.PxPerDp),
 				},
 				Color:    themes.MainTheme.Gray1,
 				Gradient: true,
@@ -54,7 +56,7 @@ func DrawFormTextBox(tb *widget.Editor, params Params) layout.Widget {
 				return layout.Dimensions{
 					Size: image.Point{
 						X: box.Size.X,
-						Y: 20,
+						Y: 10 * int(gtx.Metric.PxPerDp),
 					},
 				}
 			})
@@ -68,7 +70,7 @@ func DrawFormTextBox(tb *widget.Editor, params Params) layout.Widget {
 			Width:        unit.Dp(2),
 		}
 		// ... before laying it out, one inside the other
-		textBoxD = addLayoutHeight(border.Layout(gtx, textBox.Layout), textBoxD)
+		textBoxD = utils.AddLayoutHeight(border.Layout(gtx, textBox.Layout), textBoxD)
 
 		return textBoxD
 	}

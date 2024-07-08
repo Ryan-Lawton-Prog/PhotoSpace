@@ -11,11 +11,14 @@ build-app:
 run-api: build-api
 	cd deployments; docker-compose up --build server
 
+run-app: build-app
+	./.bin/app
+
 test:	
-	go test -v ./... -coverprofile=.test/coverage.out
+	go test -v ./... -coverprofile=./test/.report/coverage.out
 
 coverage: test
-	go tool cover -html=.test/coverage.out
+	go tool cover -html=./test/.report/coverage.out
 	
 dev-api:
 	./utils/air -c ./deployments/.air.toml

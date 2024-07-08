@@ -24,7 +24,15 @@ type SquareParams struct {
 }
 
 func DrawSquare(gtx *models.C, params SquareParams) func() {
-	rect := clip.RRect{image.Rectangle{Max: image.Pt(params.Size.Width, params.Size.Height)}, 1, 1, 1, 1}.Push(gtx.Ops)
+	rect := clip.RRect{
+		Rect: image.Rectangle{
+			Max: image.Pt(params.Size.Width, params.Size.Height),
+		},
+		SE: 1,
+		SW: 1,
+		NW: 1,
+		NE: 1,
+	}.Push(gtx.Ops)
 	if params.Gradient {
 		paint.LinearGradientOp{
 			Stop1:  f32.Pt(float32(gtx.Constraints.Max.X)/2, float32(params.Size.Height)),

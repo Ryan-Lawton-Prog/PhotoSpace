@@ -11,8 +11,8 @@ import (
 	"gioui.org/text"
 	"gioui.org/widget/material"
 	"ryanlawton.art/photospace/internal/app/models"
+	"ryanlawton.art/photospace/internal/app/widgets/shapes"
 	"ryanlawton.art/photospace/internal/pkg/themes"
-	"ryanlawton.art/photospace/internal/pkg/widgets/shapes"
 )
 
 type ErrorMessage struct {
@@ -82,12 +82,12 @@ func (messages *ErrorMessages) Layout(gtx *models.C, th *material.Theme) func(gt
 	return func(gtx models.C) layout.Dimensions {
 		var d layout.Dimensions
 		for _, message := range messages.GetErrors() {
-			textDi := shapes.DrawText(&gtx, shapes.Params{
+			textDi := shapes.DrawText(shapes.TextParams{
 				Theme:     th,
 				Text:      message,
 				Color:     themes.Red,
 				Alignment: text.Middle,
-			})
+			})(gtx)
 
 			d.Size = d.Size.Add(textDi.Size)
 		}

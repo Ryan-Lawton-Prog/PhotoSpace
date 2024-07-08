@@ -10,18 +10,19 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"ryanlawton.art/photospace/internal/app/logic"
 	"ryanlawton.art/photospace/internal/app/models"
+	errorWidget "ryanlawton.art/photospace/internal/app/widgets/error"
+	"ryanlawton.art/photospace/internal/app/widgets/insets"
+	"ryanlawton.art/photospace/internal/app/widgets/shapes"
+	"ryanlawton.art/photospace/internal/pkg/logic"
 	"ryanlawton.art/photospace/internal/pkg/themes"
-	errorWidget "ryanlawton.art/photospace/internal/pkg/widgets/error"
-	"ryanlawton.art/photospace/internal/pkg/widgets/insets"
-	"ryanlawton.art/photospace/internal/pkg/widgets/shapes"
 )
 
 const (
-	loginTitleText   = "Please Login"
+	loginTitleText   = "Login"
 	loginButtonText  = "Login"
 	signupButtonText = "Sign Up"
+	minPageWidth     = 400
 )
 
 type Widgets struct {
@@ -89,9 +90,15 @@ func (page *Login) StartRoutines(window *app.Window) {
 
 // UploadPhoto uploads a photo to the database
 func (page *Login) Layout(gtx *models.C, th *material.Theme) {
+	// Handle user input before rendering
 	page.handleInput(gtx)
 
-	inset := layout.Inset{Left: 25, Right: 25}
+	left := int(max((float32(gtx.Constraints.Max.X)/gtx.Metric.PxPerDp-minPageWidth)/2, 0))
+
+	// Calculate the margin borders
+	inset := layout.Inset{Left: unit.Dp(left), Right: unit.Dp(left)}
+
+	// Layout screen
 	inset.Layout(*gtx, func(gtx models.C) models.D {
 		flex := layout.Flex{
 			// Vertical alignment, from top to bottom
@@ -101,34 +108,45 @@ func (page *Login) Layout(gtx *models.C, th *material.Theme) {
 		}.Layout(gtx,
 			// TITLE
 			layout.Rigid(
-				func(gtx models.C) layout.Dimensions {
-					return shapes.DrawText(&gtx, shapes.Params{
-						Theme:     th,
-						Text:      loginTitleText,
-						Color:     themes.MainTheme.Gray10,
-						Alignment: text.Middle,
-						Shadow:    true,
-					})
-				},
+				shapes.DrawText(shapes.TextParams{
+					Theme:     th,
+					Text:      loginTitleText,
+					Color:     themes.MainTheme.Gray10,
+					Alignment: text.Middle,
+					Shadow:    true,
+					Size:      shapes.H3,
+				}),
 			),
 			layout.Rigid(
 				page.errorMessages.Layout(&gtx, th),
+			),
+			layout.Rigid(
+				// The height of the spacer is 25 Device independent pixels
+				layout.Spacer{Height: unit.Dp(50)}.Layout,
 			),
 			// USERNAME TEXT BOX
 			layout.Rigid(
 				shapes.DrawFormTextBox(&page.widgets.username, shapes.Params{
 					Theme:  th,
-					Text:   "username",
+					Text:   "Username",
 					Shadow: true,
 				}),
+			),
+			layout.Rigid(
+				// The height of the spacer is 25 Device independent pixels
+				layout.Spacer{Height: unit.Dp(10)}.Layout,
 			),
 			// PASSWORD TEXT BOX
 			layout.Rigid(
 				shapes.DrawFormTextBox(&page.widgets.password, shapes.Params{
 					Theme:  th,
-					Text:   "password",
+					Text:   "Password",
 					Shadow: true,
 				}),
+			),
+			layout.Rigid(
+				// The height of the spacer is 25 Device independent pixels
+				layout.Spacer{Height: unit.Dp(15)}.Layout,
 			),
 			// SIGNUP AND SUBMIT BUTTONS
 			layout.Rigid(
@@ -137,25 +155,25 @@ func (page *Login) Layout(gtx *models.C, th *material.Theme) {
 					margins := layout.Inset{
 						Top:    unit.Dp(25),
 						Bottom: unit.Dp(25),
-						Right:  unit.Dp(35),
-						Left:   unit.Dp(35),
+						Right:  unit.Dp(0),
+						Left:   unit.Dp(0),
 					}
 					// TWO: ... then we lay out those margins ...
 					return margins.Layout(gtx,
 						// THREE: ... and finally within the margins, we define and lay out the button
 						func(gtx models.C) models.D {
 							loginMat := material.Button(th, &page.widgets.loginButton, loginButtonText)
-							loginMat.Inset = insets.LargeButton
+							loginMat.Inset = insets.MediumButton
 							loginMat.Background = themes.MainTheme.Primary5
 							loginMat.Color = themes.White
 							signupMat := material.Button(th, &page.widgets.signupButton, signupButtonText)
-							signupMat.Inset = insets.LargeButton
+							signupMat.Inset = insets.MediumButton
 							signupMat.Background = themes.MainTheme.Primary5
 							signupMat.Color = themes.White
 							loginBtn := layout.Rigid(loginMat.Layout)
 							signupBtn := layout.Rigid(signupMat.Layout)
 
-							return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceEvenly}.Layout(gtx, loginBtn, signupBtn)
+							return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceBetween}.Layout(gtx, loginBtn, signupBtn)
 						},
 					)
 				},

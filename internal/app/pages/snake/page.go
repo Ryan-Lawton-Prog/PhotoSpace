@@ -15,7 +15,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"ryanlawton.art/photospace/internal/app/models"
-	"ryanlawton.art/photospace/internal/pkg/widgets/shapes"
+	"ryanlawton.art/photospace/internal/app/widgets/shapes"
 )
 
 type Pos [2]int
@@ -121,18 +121,12 @@ func (screen *Snake) Layout(gtx *models.C, th *material.Theme) {
 		Alignment: layout.Alignment(layout.Middle),
 	}.Layout(*gtx,
 		layout.Rigid(
-			func(gtx models.C) models.D {
-				if screen.gameOver {
-					return shapes.DrawText(&gtx, shapes.Params{
-						Theme:     th,
-						Text:      "GAME OVER",
-						Color:     color.NRGBA{R: 127, G: 0, B: 0, A: 255},
-						Alignment: text.Middle,
-					})
-				}
-
-				return layout.Dimensions{}
-			},
+			shapes.DrawText(shapes.TextParams{
+				Theme:     th,
+				Text:      "GAME OVER",
+				Color:     color.NRGBA{R: 127, G: 0, B: 0, A: 255},
+				Alignment: text.Middle,
+			}),
 		),
 		layout.Rigid(
 			func(gtx models.C) layout.Dimensions {
