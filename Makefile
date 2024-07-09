@@ -9,7 +9,7 @@ build-app:
 	go mod download && go build -o ./.bin/app ./cmd/app/main.go
 
 run-api: build-api
-	cd deployments; docker-compose up --build server
+	docker-compose -f "docker-compose.yml" up --build server
 
 run-app: build-app
 	./.bin/app

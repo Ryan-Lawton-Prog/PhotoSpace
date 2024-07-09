@@ -55,13 +55,17 @@ func (messages *ErrorMessages) StartRoutine() {
 	go func() {
 		// Remove old messages
 		for {
+			change := false
 			messages.mu.Lock()
 			for len(messages.messages) > 0 && messages.messages[0].duration.Unix() <= time.Now().Unix() {
 				fmt.Println("Removing message", messages.messages[0])
 				messages.messages = messages.messages[1:]
+				change = true
 			}
 			messages.mu.Unlock()
-			messages.refresh()
+			if change {
+				messages.refresh()
+			}
 			time.Sleep(time.Second)
 		}
 	}()

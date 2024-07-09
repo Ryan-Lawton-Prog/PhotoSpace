@@ -6,8 +6,8 @@ import (
 	"gioui.org/app"
 	"gioui.org/widget/material"
 	"ryanlawton.art/photospace/internal/app/models"
+	homePage "ryanlawton.art/photospace/internal/app/pages/home"
 	loginPage "ryanlawton.art/photospace/internal/app/pages/login"
-	snakePage "ryanlawton.art/photospace/internal/app/pages/snake"
 )
 
 type IPage interface {
@@ -19,8 +19,8 @@ func GetPageFactory(page models.PageId, pageQueue *chan models.PageId, window *a
 	switch page {
 	case models.Login:
 		return loginPage.NewPage(pageQueue, window), nil
-	case models.Snake:
-		return snakePage.NewPage(pageQueue), nil
+	case models.Home:
+		return homePage.NewPage(pageQueue, window), nil
 	}
 
 	return nil, fmt.Errorf("wrong page id passed")
