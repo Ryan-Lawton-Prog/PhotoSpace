@@ -22,11 +22,11 @@ jobs:
         go-version: '1.22.x'
 
     - name: Build
-      working-directory: ./API
+      working-directory: .
       run: go build -v ./cmd/api/main.go
 
     - name: Test
-      working-directory: ./API
+      working-directory: .
       run: go test -v ./...
     - name: Upload Go test results
       uses: actions/upload-artifact@v4
