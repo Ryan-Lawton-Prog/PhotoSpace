@@ -25,7 +25,7 @@ import (
 const (
 	minPageWidth  = 400
 	sideBarWidth  = 200
-	maxImageWidth = 300
+	maxImageWidth = 200
 	toolBarHeight = 25
 )
 
@@ -168,6 +168,7 @@ func (page *Home) sidebar(gtx *models.C, th *material.Theme) layout.FlexChild {
 			return layout.Dimensions{
 				Size: image.Point{
 					X: int(gtx.Metric.PxPerDp) * sideBarWidth,
+					Y: gtx.Constraints.Max.Y,
 				},
 			}
 		},
@@ -245,7 +246,7 @@ func (page *Home) imageDisplay() layout.FlexChild {
 
 			return layout.Dimensions{Size: image.Point{
 				X: gtx.Constraints.Max.X,
-				Y: gtx.Constraints.Max.Y - 50,
+				Y: gtx.Constraints.Max.Y,
 			}}
 		},
 	)

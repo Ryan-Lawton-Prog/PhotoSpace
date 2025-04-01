@@ -20,7 +20,7 @@ func DrawImage(ops *op.Ops, img image.Image, bounds image.Point, maxSize image.P
 		f32.Affine2D{}.Scale(
 			f32.Pt(
 				0,
-				((float32(maxSize.Y)-(float32(bounds.Y)*bestScaler))/2),
+				0,
 			),
 			f32.Pt(bestScaler, bestScaler),
 		)).Add(ops)
