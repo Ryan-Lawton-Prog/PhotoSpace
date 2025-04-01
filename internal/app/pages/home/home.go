@@ -2,13 +2,16 @@ package loginPage
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/jpeg"
+	"math"
+	"strconv"
 	"time"
 
 	"gioui.org/app"
 	"gioui.org/layout"
+	"gioui.org/op"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -23,6 +26,7 @@ const (
 	minPageWidth  = 400
 	sideBarWidth  = 200
 	maxImageWidth = 300
+	toolBarHeight = 25
 )
 
 type Widgets struct {
@@ -48,7 +52,7 @@ func NewPage(pageQueue *chan models.PageId, window *app.Window) *Home {
 	ids, _ := logic.GetPhotoIDs()
 	images := []image.Image{}
 	for _, id := range ids {
-		photoB, _ := logic.GetPhoto(id)
+		photoB, _ := logic.GetPhotoThumbnail(id)
 		file, err := jpeg.Decode(bytes.NewReader(photoB))
 		if err != nil {
 			continue
@@ -100,33 +104,29 @@ func (page *Home) Layout(gtx *models.C, th *material.Theme) {
 		}.Layout(gtx,
 			// TITLE
 			// layout.Rigid(
-			// 	shapes.DrawText(shapes.TextParams{
-			// 		Theme:     th,
-			// 		Text:      string(page.images[0]),
-			// 		Color:     themes.MainTheme.Gray10,
-			// 		Alignment: text.Middle,
-			// 		Shadow:    true,
-			// 		Size:      shapes.H3,
-			// 	}),
+			// shapes.DrawText(shapes.TextParams{
+			// 	Theme:     th,
+			// 	Text:      string(page.images[0]),
+			// 	Color:     themes.MainTheme.Gray10,
+			// 	Alignment: text.Middle,
+			// 	Shadow:    true,
+			// 	Size:      shapes.H3,
+			// }),
 			// ),
-			page.Toolbar(&gtx, th),
+			page.toolbar(&gtx, th),
 			layout.Rigid(
 				func(gtx models.C) layout.Dimensions {
 					return layout.Flex{
 						Axis:    layout.Horizontal,
-						Spacing: layout.SpaceEnd,
+						Spacing: layout.SpaceBetween,
 					}.Layout(
 						gtx,
-						page.Sidebar(&gtx, th),
-						page.ImageDisplay(&gtx, th),
+						page.sidebar(&gtx, th),
+						page.imageDisplay(),
 					)
 				},
 			),
-			// ... then one to hold an empty spacer
-			layout.Rigid(
-				// The height of the spacer is 25 Device independent pixels
-				layout.Spacer{Height: unit.Dp(25)}.Layout,
-			),
+			page.footer(&gtx, th),
 		)
 
 		return flex
@@ -134,120 +134,119 @@ func (page *Home) Layout(gtx *models.C, th *material.Theme) {
 
 }
 
-func (page *Home) Toolbar(gtx *models.C, th *material.Theme) layout.FlexChild {
-
+func (page *Home) toolbar(gtx *models.C, th *material.Theme) layout.FlexChild {
 	return layout.Rigid(
-		// The height of the spacer is 25 Device independent pixels
-		layout.Spacer{Height: unit.Dp(25)}.Layout,
-	)
-
-}
-
-func (page *Home) Sidebar(gtx *models.C, th *material.Theme) layout.FlexChild {
-	return layout.Rigid(
-		layout.Spacer{Width: unit.Dp(sideBarWidth)}.Layout,
-	)
-}
-
-func (page *Home) ImageDisplay(gtx *models.C, th *material.Theme) layout.FlexChild {
-
-	//remainingSpace := (gtx.Constraints.Max.X / int(gtx.Metric.PxPerDp)) - sideBarWidth
-	//maxWidth := remainingSpace/maxImageWidth + 1
-
-	return layout.Flexed(100,
 		func(gtx models.C) models.D {
-			dim := list.Layout(gtx, len(page.images), func(gtx layout.Context, i int) layout.Dimensions {
-				im := page.images[i]
-				x := im.Bounds().Max
-				//fmt.Println(point, i, x)
-				if im == nil {
-					return layout.Dimensions{}
-				}
+			shapes.DrawSquare(&gtx, shapes.SquareParams{
+				Color: themes.Red,
+				Size: shapes.Size{
+					Width:  gtx.Constraints.Max.X,
+					Height: int(gtx.Metric.PxPerDp) * toolBarHeight,
+				},
+			})()
 
-				fmt.Println(i)
-
-				// g := op.Offset(
-				// 	image.Pt(
-				// 		((i * maxImageWidth) % (maxWidth * maxImageWidth)),
-				// 		((i)/maxWidth)*maxImageWidth),
-				// ).Push(gtx.Ops)
-				shapes.DrawSquare(&gtx, shapes.SquareParams{
-					Size: shapes.Size{
-						Width:  300,
-						Height: 300,
-					},
-					Color: themes.MainTheme.Gray0,
-				})()
-
-				size := widget.Border{
-					Color:        themes.MainTheme.Gray10,
-					CornerRadius: unit.Dp(1),
-					Width:        unit.Dp(2),
-				}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-					return layout.Dimensions{
-						Size: image.Point{
-							X: maxImageWidth,
-							Y: maxImageWidth,
-						},
-					}
-				}).Size
-
-				shapes.DrawImage(gtx.Ops, im, x, image.Point{X: maxImageWidth, Y: maxImageWidth})
-				// g.Pop()
-
-				return layout.Dimensions{Size: size}
-			})
-
-			return dim
+			return layout.Dimensions{
+				Size: image.Point{
+					Y: int(gtx.Metric.PxPerDp) * toolBarHeight,
+				},
+			}
 		},
 	)
+}
 
-	// return layout.Rigid(
-	// 	func(gtx models.C) models.D {
-	// 		remainingSpace := (gtx.Constraints.Max.X / int(gtx.Metric.PxPerDp)) - sideBarWidth
-	// 		maxWidth := remainingSpace/maxImageWidth + 1
-	// 		failed := 0
-	// 		for i, im := range page.images {
-	// 			x := im.Bounds().Max
-	// 			//fmt.Println(point, i, x)
-	// 			if im == nil {
-	// 				failed++
-	// 				continue
-	// 			}
+func (page *Home) sidebar(gtx *models.C, th *material.Theme) layout.FlexChild {
+	return layout.Rigid(
+		func(gtx models.C) models.D {
+			shapes.DrawSquare(&gtx, shapes.SquareParams{
+				Color: themes.MainTheme.Error,
+				Size: shapes.Size{
+					Width:  int(gtx.Metric.PxPerDp) * sideBarWidth,
+					Height: gtx.Constraints.Max.Y,
+				},
+			})()
 
-	// 			g := op.Offset(
-	// 				image.Pt(
-	// 					((i * maxImageWidth) % (maxWidth * maxImageWidth)),
-	// 					((i)/maxWidth)*maxImageWidth),
-	// 			).Push(gtx.Ops)
-	// 			shapes.DrawSquare(&gtx, shapes.SquareParams{
-	// 				Size: shapes.Size{
-	// 					Width:  300,
-	// 					Height: 300,
-	// 				},
-	// 				Color: themes.MainTheme.Gray0,
-	// 			})()
+			return layout.Dimensions{
+				Size: image.Point{
+					X: int(gtx.Metric.PxPerDp) * sideBarWidth,
+				},
+			}
+		},
+	)
+}
 
-	// 			widget.Border{
-	// 				Color:        themes.MainTheme.Gray10,
-	// 				CornerRadius: unit.Dp(1),
-	// 				Width:        unit.Dp(2),
-	// 			}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-	// 				return layout.Dimensions{
-	// 					Size: image.Point{
-	// 						X: maxImageWidth,
-	// 						Y: maxImageWidth,
-	// 					},
-	// 				}
-	// 			})
+func (page *Home) footer(gtx *models.C, th *material.Theme) layout.FlexChild {
+	return layout.Rigid(
+		// The height of the spacer is 25 Device independent pixels
+		// layout.Spacer{Height: unit.Dp(25)}.Layout,
+		shapes.DrawText(shapes.TextParams{
+			Theme:     th,
+			Text:      strconv.Itoa(len(page.images)),
+			Color:     themes.MainTheme.Gray10,
+			Alignment: text.Middle,
+			Shadow:    true,
+			Size:      shapes.H3,
+		}),
+	)
+}
 
-	// 			shapes.DrawImage(gtx.Ops, im, x, image.Point{X: maxImageWidth, Y: maxImageWidth})
-	// 			g.Pop()
+func (page *Home) imageDisplay() layout.FlexChild {
+	return layout.Flexed(1,
+		func(gtx models.C) models.D {
+			adjustedMaxImageWidth := int(maxImageWidth * gtx.Metric.PxPerDp)
+			remainingSpace := (gtx.Constraints.Max.X)
+			maxWidth := remainingSpace / adjustedMaxImageWidth
+			totalImages := len(page.images)
+			rows := int(math.Ceil(float64(totalImages) / float64(maxWidth)))
 
-	// 		}
+			marginsSize := (gtx.Constraints.Max.X - (adjustedMaxImageWidth * maxWidth)) / 2
 
-	// 		d := image.Point{X: remainingSpace, Y: 2000}
-	// 		return layout.Dimensions{Size: d}
+			list.Layout(gtx, rows, func(gtx layout.Context, i int) layout.Dimensions {
+				for j, im := range page.images[maxWidth*i : min(maxWidth*i+maxWidth, totalImages)] {
+					x := im.Bounds().Max
+					if im == nil {
+						continue
+					}
 
-	// 	},
+					g := op.Offset(
+						image.Pt(
+							marginsSize+(j*adjustedMaxImageWidth)%(maxWidth*adjustedMaxImageWidth),
+							0),
+					).Push(gtx.Ops)
+					shapes.DrawSquare(&gtx, shapes.SquareParams{
+						Size: shapes.Size{
+							Width:  adjustedMaxImageWidth,
+							Height: adjustedMaxImageWidth,
+						},
+						Color: themes.MainTheme.Gray0,
+					})()
+
+					widget.Border{
+						Color:        themes.MainTheme.Gray10,
+						CornerRadius: unit.Dp(1),
+						Width:        unit.Dp(2),
+					}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return layout.Dimensions{
+							Size: image.Point{
+								X: adjustedMaxImageWidth,
+								Y: adjustedMaxImageWidth,
+							},
+						}
+					})
+
+					shapes.DrawImage(gtx.Ops, im, x, image.Point{X: adjustedMaxImageWidth, Y: adjustedMaxImageWidth})
+					g.Pop()
+				}
+
+				return layout.Dimensions{Size: image.Point{
+					X: adjustedMaxImageWidth * maxWidth,
+					Y: adjustedMaxImageWidth,
+				}}
+			})
+
+			return layout.Dimensions{Size: image.Point{
+				X: gtx.Constraints.Max.X,
+				Y: gtx.Constraints.Max.Y - 50,
+			}}
+		},
+	)
 }

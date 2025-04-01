@@ -82,6 +82,28 @@ func (h *Handler) Fetch(c *gin.Context) {
 	c.Data(http.StatusOK, "application/octet-stream", blob)
 }
 
+func (h *Handler) FetchThumbnail(c *gin.Context) {
+	inp := new(fetchInput)
+	if err := c.BindJSON(inp); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	user := c.MustGet(auth.CtxUserKey).(*models.User)
+
+	pm, blob, err := h.useCase.FetchThumbnail(c.Request.Context(), user, inp.PhotoID)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Fetched file name: %s", pm.Filename)
+
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", pm.Filename))
+	c.Data(http.StatusOK, "application/octet-stream", blob)
+}
+
 func (h *Handler) FetchAllIDs(c *gin.Context) {
 	user := c.MustGet(auth.CtxUserKey).(*models.User)
 

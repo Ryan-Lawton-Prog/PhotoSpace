@@ -77,3 +77,32 @@ func GetPhoto(id string) ([]byte, error) {
 		return nil, errors.New("failed to fetch ids")
 	}
 }
+
+func GetPhotoThumbnail(id string) ([]byte, error) {
+	client := &http.Client{}
+	jsonBody, _ := json.Marshal(&GetPhotoBody{PhotoId: id})
+	req, err := http.NewRequest("GET", photoSpaceURL+"/api/photo/thumbnail", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+
+	user, _ := user.GetInstance()
+	req.Header.Add("Authorization", "Bearer "+string(user.JWT))
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		resBody, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		return resBody, nil
+	default:
+		return nil, errors.New("failed to fetch ids")
+	}
+}

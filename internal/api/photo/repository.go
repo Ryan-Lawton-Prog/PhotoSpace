@@ -16,5 +16,6 @@ type MetadataRepository interface {
 type BucketRepository interface {
 	UploadPhoto(ctx context.Context, blob *models.PhotoBlob, metadata *models.PhotoMetadata) error
 	FetchPhoto(ctx context.Context, metadata *models.PhotoMetadata) (models.PhotoBlob, error)
+	FetchThumbnail(ctx context.Context, metadata *models.PhotoMetadata) (models.PhotoBlob, error)
 	// DeletePhoto() error
 }

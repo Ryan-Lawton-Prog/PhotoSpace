@@ -16,11 +16,12 @@ import (
 var uploadPath string
 
 type PhotoMetadata struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	UserID    primitive.ObjectID `bson:"user_id"`
-	AlbumID   primitive.ObjectID `bson:"album_id"`
-	Filename  string             `bson:"filename"`
-	BucketURL string             `bson:"bucket_url"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	UserID       primitive.ObjectID `bson:"user_id"`
+	AlbumID      primitive.ObjectID `bson:"album_id"`
+	Filename     string             `bson:"filename"`
+	BucketURL    string             `bson:"bucket_url"`
+	ThumbnailUrl string             `bson:"thumbnail_url"`
 }
 
 type PhotoRepository struct {

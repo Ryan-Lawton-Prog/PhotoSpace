@@ -53,3 +53,23 @@ func (b PhotoUseCase) FetchPhoto(ctx context.Context, user *models.User, photoId
 func (b PhotoUseCase) FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error) {
 	return b.metadataRepo.FetchPhotoAllIDs(ctx, user)
 }
+
+func (b PhotoUseCase) FetchThumbnail(ctx context.Context, user *models.User, photoId string) (*models.PhotoMetadata, models.PhotoBlob, error) {
+	pm := &models.PhotoMetadata{
+		ID:     photoId,
+		UserID: user.ID,
+	}
+
+	if err := b.metadataRepo.FetchPhoto(ctx, pm); err != nil {
+		return nil, nil, err
+	}
+	blob, err := b.bucketRepo.FetchThumbnail(ctx, pm)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Update the metadata to reflect the thumbnail if it was generated
+	b.metadataRepo.UploadPhoto(ctx, pm)
+
+	return pm, blob, nil
+}

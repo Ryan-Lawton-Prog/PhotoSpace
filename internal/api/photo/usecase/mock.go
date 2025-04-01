@@ -28,3 +28,9 @@ func (p PhotoUseCaseMock) FetchPhotoAllIDs(ctx context.Context, user *models.Use
 
 	return args.Get(0).([]string), args.Error(1)
 }
+
+func (p PhotoUseCaseMock) FetchThumbnail(ctx context.Context, user *models.User, photoId string) (*models.PhotoMetadata, models.PhotoBlob, error) {
+	args := p.Called(user, photoId)
+
+	return args.Get(0).(*models.PhotoMetadata), args.Get(1).(models.PhotoBlob), args.Error(2)
+}
