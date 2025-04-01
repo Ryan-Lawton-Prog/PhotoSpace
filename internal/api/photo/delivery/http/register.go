@@ -12,7 +12,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc photo.UseCase) {
 	{
 		photos.POST("", h.Upload)
 		photos.GET("/ids", h.FetchAllIDs)
-		// photos.DELETE("", h.Delete)
+		photos.DELETE("", h.Delete)
 		photos.GET("", h.Fetch)
 		photos.GET("/thumbnail", h.FetchThumbnail)
 	}

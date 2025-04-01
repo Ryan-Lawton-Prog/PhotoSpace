@@ -34,3 +34,9 @@ func (p PhotoUseCaseMock) FetchThumbnail(ctx context.Context, user *models.User,
 
 	return args.Get(0).(*models.PhotoMetadata), args.Get(1).(models.PhotoBlob), args.Error(2)
 }
+
+func (p PhotoUseCaseMock) DeletePhoto(ctx context.Context, user *models.User, photoId string) error {
+	args := p.Called(user, photoId)
+
+	return args.Error(0)
+}

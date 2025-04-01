@@ -141,3 +141,19 @@ func (pr *BucketRepository) generateThumbnail(blob *models.PhotoBlob) (models.Ph
 	thumbnailBlob := buffer.Bytes()
 	return thumbnailBlob, nil
 }
+
+func (pr *BucketRepository) DeletePhoto(ctx context.Context, metadata *models.PhotoMetadata) error {
+	err := os.Remove(metadata.BucketURL)
+	if err != nil {
+		log.Printf("Error deleting primary image: %s", err.Error())
+		return err
+	}
+
+	err = os.Remove(metadata.ThumbnailURL)
+	if err != nil {
+		log.Printf("Error deleting thumbnail image: %s", err.Error())
+		return err
+	}
+
+	return nil
+}

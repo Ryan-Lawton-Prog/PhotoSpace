@@ -11,5 +11,6 @@ type UseCase interface {
 	FetchPhoto(ctx context.Context, user *models.User, photoId string) (*models.PhotoMetadata, models.PhotoBlob, error)
 	FetchThumbnail(ctx context.Context, user *models.User, photoId string) (*models.PhotoMetadata, models.PhotoBlob, error)
 	FetchPhotoAllIDs(ctx context.Context, user *models.User) ([]string, error)
+	DeletePhoto(ctx context.Context, user *models.User, photoId string) error
 	// FetchAlbum(ctx context.Context, user *models.User, id string) error
 }

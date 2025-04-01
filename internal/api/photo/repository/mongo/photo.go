@@ -2,6 +2,7 @@ package photo
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -58,22 +59,17 @@ func (pr *PhotoRepository) UploadPhoto(ctx context.Context, pm *models.PhotoMeta
 func (pr *PhotoRepository) FetchPhoto(ctx context.Context, pm *models.PhotoMetadata) error {
 	model := toModel(pm)
 
-	res, err := pr.db.Find(ctx, bson.D{{Key: "user_id", Value: model.UserID}, {Key: "_id", Value: model.ID}})
-	if err != nil {
-		return err
-	}
-
-	defer res.Close(ctx)
+	res := pr.db.FindOne(ctx, bson.D{{Key: "user_id", Value: model.UserID}, {Key: "_id", Value: model.ID}})
 
 	p := new(PhotoMetadata)
 
-	for res.Next(ctx) {
-		err := res.Decode(p)
-		if err != nil {
-			log.Printf("Error decoding photo metadata: %s", err.Error())
-			return err
-		}
+	err := res.Decode(p)
+	if err != nil {
+		log.Printf("Error decoding photo metadata: %s", err.Error())
+		return err
 	}
+
+	fmt.Println("Fetched photo with ID: ", p)
 
 	*pm = *toPhoto(p)
 
@@ -105,6 +101,17 @@ func (pr *PhotoRepository) FetchPhotoAllIDs(ctx context.Context, user *models.Us
 	}
 
 	return photoIDs, nil
+}
+
+func (pr *PhotoRepository) DeletePhoto(ctx context.Context, pm *models.PhotoMetadata) error {
+	model := toModel(pm)
+
+	_, err := pr.db.DeleteOne(ctx, bson.D{{Key: "user_id", Value: model.UserID}, {Key: "_id", Value: model.ID}})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func toModel(pm *models.PhotoMetadata) *PhotoMetadata {

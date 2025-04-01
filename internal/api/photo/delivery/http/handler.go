@@ -72,6 +72,11 @@ func (h *Handler) Fetch(c *gin.Context) {
 	pm, blob, err := h.useCase.FetchPhoto(c.Request.Context(), user, inp.PhotoID)
 
 	if err != nil {
+		// if the photo doesn't exist return 404
+		if err.Error() == "mongo: no documents in result" {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -94,6 +99,11 @@ func (h *Handler) FetchThumbnail(c *gin.Context) {
 	pm, blob, err := h.useCase.FetchThumbnail(c.Request.Context(), user, inp.PhotoID)
 
 	if err != nil {
+		// if the photo doesn't exist return 404
+		if err.Error() == "mongo: no documents in result" {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -114,4 +124,27 @@ func (h *Handler) FetchAllIDs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"photo_ids": ids})
+}
+
+func (h *Handler) Delete(c *gin.Context) {
+	inp := new(fetchInput)
+	if err := c.BindJSON(inp); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	user := c.MustGet(auth.CtxUserKey).(*models.User)
+
+	err := h.useCase.DeletePhoto(c.Request.Context(), user, inp.PhotoID)
+	if err != nil {
+		// if the photo doesn't exist return 404
+		if err.Error() == "mongo: no documents in result" {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Photo deleted successfully"})
 }

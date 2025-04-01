@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"ryanlawton.art/photospace/internal/api/models"
 	"ryanlawton.art/photospace/internal/api/photo"
@@ -72,4 +74,27 @@ func (b PhotoUseCase) FetchThumbnail(ctx context.Context, user *models.User, pho
 	b.metadataRepo.UploadPhoto(ctx, pm)
 
 	return pm, blob, nil
+}
+
+func (b PhotoUseCase) DeletePhoto(ctx context.Context, user *models.User, photoId string) error {
+	pm := &models.PhotoMetadata{
+		ID:     photoId,
+		UserID: user.ID,
+	}
+
+	fmt.Println("Deleting photo with ID: ", pm.ID)
+
+	if err := b.metadataRepo.FetchPhoto(ctx, pm); err != nil {
+		return err
+	}
+
+	fmt.Println("Deleting photo with object: ", *pm)
+
+	err := b.bucketRepo.DeletePhoto(ctx, pm)
+	// If the photo doesn't exist in the bucket, we can still delete the metadata
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	return b.metadataRepo.DeletePhoto(ctx, pm)
 }
