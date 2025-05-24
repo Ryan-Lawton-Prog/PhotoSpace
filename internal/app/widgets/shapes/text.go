@@ -48,12 +48,14 @@ const (
 	H1 TextSize = "H1"
 	H2 TextSize = "H2"
 	H3 TextSize = "H3"
+	H4 TextSize = "H4"
 )
 
 var sizeMap = map[TextSize]func(th *material.Theme, txt string) material.LabelStyle{
 	H1: material.H1,
 	H2: material.H2,
 	H3: material.H3,
+	H4: material.H4,
 }
 
 // todo: move to different file and fix shadow outbounds

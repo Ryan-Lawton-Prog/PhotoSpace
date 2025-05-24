@@ -6,4 +6,5 @@ const (
 	Login PageId = iota
 	Home
 	Snake
+	Upload
 )

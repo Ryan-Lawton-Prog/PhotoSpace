@@ -17,19 +17,22 @@ import (
 	"gioui.org/widget/material"
 	"ryanlawton.art/photospace/internal/app/models"
 	errorWidget "ryanlawton.art/photospace/internal/app/widgets/error"
+	"ryanlawton.art/photospace/internal/app/widgets/insets"
 	"ryanlawton.art/photospace/internal/app/widgets/shapes"
 	"ryanlawton.art/photospace/internal/pkg/logic"
 	"ryanlawton.art/photospace/internal/pkg/themes"
 )
 
 const (
-	minPageWidth  = 400
-	sideBarWidth  = 200
-	maxImageWidth = 200
-	toolBarHeight = 25
+	minPageWidth     = 400
+	sideBarWidth     = 200
+	maxImageWidth    = 200
+	toolBarHeight    = 42
+	uploadButtonText = "+"
 )
 
 type Widgets struct {
+	uploadButton widget.Clickable
 }
 
 type Image []byte
@@ -45,6 +48,7 @@ type Home struct {
 	errorMessagesQueue chan error
 	images             []image.Image
 	position           layout.Position
+	selected           image.Image
 }
 
 func NewPage(pageQueue *chan models.PageId, window *app.Window) *Home {
@@ -70,7 +74,9 @@ func NewPage(pageQueue *chan models.PageId, window *app.Window) *Home {
 }
 
 func (page *Home) handleInput(gtx *models.C) {
-
+	if page.widgets.uploadButton.Clicked(*gtx) {
+		page.pageQueue <- models.Upload
+	}
 }
 
 func (page *Home) StartRoutines(window *app.Window) {
@@ -137,19 +143,52 @@ func (page *Home) Layout(gtx *models.C, th *material.Theme) {
 func (page *Home) toolbar(gtx *models.C, th *material.Theme) layout.FlexChild {
 	return layout.Rigid(
 		func(gtx models.C) models.D {
+
+			// Record toolbar to get size before drawing
+			macro := op.Record(gtx.Ops)
+			flex := layout.Flex{
+				Axis:    layout.Horizontal,
+				Spacing: layout.SpaceBetween,
+			}.Layout(gtx,
+				// Title
+				layout.Rigid(
+					shapes.DrawText(shapes.TextParams{
+						Theme:     th,
+						Text:      "PhotoSpace",
+						Color:     themes.MainTheme.Gray10,
+						Alignment: text.Middle,
+						Shadow:    true,
+						Size:      shapes.H4,
+					}),
+				),
+				// Upload Button
+				layout.Rigid(
+					func(gtx models.C) layout.Dimensions {
+						uploadMtn := material.Button(th, &page.widgets.uploadButton, uploadButtonText)
+						uploadMtn.Inset = insets.IconButton
+						uploadMtn.Background.A = 0
+						uploadMtn.Color = themes.MainTheme.Gray10
+						uploadBtn := layout.Rigid(uploadMtn.Layout)
+
+						return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceBetween}.Layout(gtx, uploadBtn)
+					},
+				),
+			)
+			c := macro.Stop()
+
+			// Draw background using calculated toolbar size
 			shapes.DrawSquare(&gtx, shapes.SquareParams{
-				Color: themes.Red,
+				Color: themes.MainTheme.Gray2,
 				Size: shapes.Size{
 					Width:  gtx.Constraints.Max.X,
-					Height: int(gtx.Metric.PxPerDp) * toolBarHeight,
+					Height: flex.Size.Y,
 				},
 			})()
 
-			return layout.Dimensions{
-				Size: image.Point{
-					Y: int(gtx.Metric.PxPerDp) * toolBarHeight,
-				},
-			}
+			// Draw the toolbar
+			c.Add(gtx.Ops)
+
+			return flex
 		},
 	)
 }

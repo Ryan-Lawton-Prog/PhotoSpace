@@ -8,6 +8,7 @@ import (
 	"ryanlawton.art/photospace/internal/app/models"
 	homePage "ryanlawton.art/photospace/internal/app/pages/home"
 	loginPage "ryanlawton.art/photospace/internal/app/pages/login"
+	uploadPage "ryanlawton.art/photospace/internal/app/pages/upload"
 )
 
 type IPage interface {
@@ -21,6 +22,8 @@ func GetPageFactory(page models.PageId, pageQueue *chan models.PageId, window *a
 		return loginPage.NewPage(pageQueue, window), nil
 	case models.Home:
 		return homePage.NewPage(pageQueue, window), nil
+	case models.Upload:
+		return uploadPage.NewPage(pageQueue, window), nil
 	}
 
 	return nil, fmt.Errorf("wrong page id passed")
