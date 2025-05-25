@@ -1,65 +1,66 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
+import { ref } from 'vue'
 
-    import { useAuthStore } from '@/stores/auth'
-    import { useImageStore } from '@/stores/images'
-    import { useRouter } from 'vue-router'
-    const auth = useAuthStore()
-    const images = useImageStore()
-    const router = useRouter()
+import { useAuthStore } from '../stores/auth'
+import { useImageStore } from '../stores/images'
+import { useRouter } from 'vue-router'
+const auth = useAuthStore()
+const images = useImageStore()
+const router = useRouter()
 
-    const loading = ref<boolean>(true)
+const loading = ref<boolean>(true)
 
-    if (!auth.isAuthenticated) {
-        router.push('/login')
-    } else {
-        console.log('Token:', auth.token, auth.isAuthenticated)
-        images.fetchImages(auth.token).then(() => {
+if (!auth.isAuthenticated) {
+    router.push('/login')
+} else if (!images.hasImages) {
+    images
+        .fetchImages(auth.token as string)
+        .then(() => {
             loading.value = false
-        }).catch((error) => {
+        })
+        .catch((error: any) => {
             console.error('Error fetching images:', error)
             loading.value = false
         })
-    }
+}
 
-    function logout () {
-        auth.set(null)
-        router.push('/login')
-    }
-
+function logout() {
+    auth.set(null)
+    router.push('/login')
+}
 </script>
 
 <template>
-  <main>
-    <div class="content">
-        <div v-if="!images.hasImages">
-            <h1>Welcome to PhotoSpace</h1>
-            <p>Your personal space for managing and sharing your photos.</p>
-        </div>
-        <div v-else>
-            <div class="loading" v-if="images.isLoading">
-                <p>Loading your photos...</p>
+    <main>
+        <div class="content">
+            <div v-if="!images.hasImages">
+                <h1>Welcome to PhotoSpace</h1>
+                <p>Your personal space for managing and sharing your photos.</p>
             </div>
-
             <div v-else>
-                <div class="gallery">
-                    <div class="image" v-for="image in images.imageUrls" :key="image.id">
-                        <img :src="image" :alt="test" />
+                <div class="loading" v-if="loading">
+                    <p>Loading your photos...</p>
+                </div>
+
+                <div v-else>
+                    <div class="gallery">
+                        <div class="image" v-for="image in images.imageUrls" :key="image">
+                            <img :src="image" />
+                        </div>
+                    </div>
+                    <div v-if="!images.hasImages" class="no-images">
+                        <h1>No Images Found</h1>
+                        <p>It seems you haven't uploaded any images yet.</p>
+                        <ul>
+                            <li>Click the "Upload" button to add your first photo.</li>
+                            <li>Check back later to see your uploaded photos.</li>
+                            <li>Explore the app to discover more features.</li>
+                        </ul>
                     </div>
                 </div>
-                <div v-if="!images.hasImages" class="no-images">
-                    <h1>No Images Found</h1>
-                    <p>It seems you haven't uploaded any images yet.</p>
-                    <ul>
-                        <li>Click the "Upload" button to add your first photo.</li>
-                        <li>Check back later to see your uploaded photos.</li>
-                        <li>Explore the app to discover more features.</li>
-                    </ul>
-                </div>
             </div>
         </div>
-    </div>
-  </main>
+    </main>
 </template>
 
 <style scoped>
@@ -73,33 +74,33 @@
     width: 80vw;
     align-items: center;
     place-content: space-evenly;
-  }
+}
 
-  .images img {
+.images img {
     width: 100%;
     height: 22vw;
     object-fit: cover;
     border-radius: 0.75rem;
-  }
+}
 
 .toolbar {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  background-color: #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f0f0f0;
 }
-    button {
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-    }
-    
-    button:hover {
-        background-color: #0056b3;
-    }
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
 .content {
     padding: 20px;
     background-color: #ffffff;
@@ -141,5 +142,4 @@
 .no-images li {
     margin: 5px 0;
 }
-
 </style>
