@@ -89,9 +89,16 @@ func (h *Handler) Fetch(c *gin.Context) {
 
 func (h *Handler) FetchThumbnail(c *gin.Context) {
 	inp := new(fetchInput)
-	if err := c.BindJSON(inp); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
+	if err := c.ShouldBindJSON(inp); err != nil {
+		// Check Header if body not found
+		photoId := c.GetHeader("photo_id")
+		if photoId == "" {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		inp.PhotoID = photoId
+		err = nil
 	}
 
 	user := c.MustGet(auth.CtxUserKey).(*models.User)

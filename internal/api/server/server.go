@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -55,9 +56,17 @@ func NewApp() *App {
 func (a *App) Run(port string) error {
 	// Init gin handler
 	router := gin.Default()
+
+	// CORS configuration
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+	config.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "X-Requested-With", "Access-Control-Allow-Headers", "photo_id"}
+
 	router.Use(
 		gin.Recovery(),
 		gin.Logger(),
+		cors.New(config),
 	)
 
 	// Set up http handlers
