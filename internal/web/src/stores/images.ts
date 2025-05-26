@@ -6,6 +6,7 @@ type imageResponseType = {
 }
 
 export const useImageStore = defineStore('imageStore', () => {
+    // TODO: Create data structure to better manage images
     const imageIds = ref<string[]>([])
     const imageUrls = ref<string[]>([])
     const addImage = (id: string, photo: string) => {
@@ -49,7 +50,7 @@ export const useImageStore = defineStore('imageStore', () => {
             })
     }
 
-    const fetchImages = async (token: string) => {
+    const fetchImages = async (token: string): Promise<void> => {
         if (!token) {
             console.warn('No token provided for fetching images')
             return
@@ -89,6 +90,40 @@ export const useImageStore = defineStore('imageStore', () => {
             })
     }
 
+    const uploadImage = async (token: string, file: File): Promise<void> => {
+        const formData = new FormData()
+        formData.append('photo', file)
+
+        return await fetch(`${import.meta.env.VITE_API_URI}/api/photo`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                if (response.ok) {
+                    // Handle successful upload
+                    const photo = await response.json()
+                    console.log('Image uploaded successfully:', photo)
+                    imageIds.value.push(photo.photo_id)
+                    const thumbnail = await fetchThumbnail(token, photo.photo_id)
+                    if (thumbnail) {
+                        imageUrls.value.push(thumbnail)
+                    } else {
+                        console.warn(`No thumbnail found for uploaded photo ID: ${photo.photo_id}`)
+                    }
+                } else {
+                    // Handle error response
+                    throw new Error('Failed to upload image')
+                }
+            })
+            .catch((error) => {
+                console.error('Error uploading image:', error)
+                throw error
+            })
+    }
+
     return {
         imageIds,
         imageUrls,
@@ -99,5 +134,6 @@ export const useImageStore = defineStore('imageStore', () => {
         hasImages,
         getImageCount,
         fetchImages,
+        uploadImage,
     }
 })
