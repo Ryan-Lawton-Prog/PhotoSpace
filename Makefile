@@ -1,21 +1,16 @@
 build:
-	go mod download && go build -o ./.bin/app ./cmd/app/main.go
 	go mod download && CGO_ENABLED=0 GOOS=linux go build -o ./.bin/api ./cmd/api/main.go
+	cd internal/web && npm run build
 
 build-api:
 	go mod download && CGO_ENABLED=0 GOOS=linux go build -o ./.bin/api ./cmd/api/main.go
 
-build-app:
-	go mod download && go build -o ./.bin/app ./cmd/app/main.go
 
 build-ui:
 	cd internal/web && npm run build
 
 run-api: build-api
 	docker-compose -f "docker-compose.yml" up --build server
-
-run-app: build-app
-	./.bin/app
 
 run-ui:
 	serve -p 3000 -d ./internal/web/dist
