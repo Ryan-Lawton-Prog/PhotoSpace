@@ -14,21 +14,21 @@ services:
   #   volumes:
   #   - ./.data/bucket:/bucket
 
-  # api:
-  #   build: ./
-  #   container_name: "photo-space-api"
-  #   ports:
-  #     - "8000:8000"
-  #   develop:
-  #     watch:
-  #       - action: rebuild
-  #         path: ./internal
-  #         target: /app
-  #   depends_on:
-  #     - mongodb
-  #   volumes:
-  #     - ./.data/bucket:/bucket
-  #   command: ./api
+  api:
+    build: ./
+    container_name: "photo-space-api"
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./internal
+          target: /app
+    depends_on:
+      - mongodb
+    volumes:
+      - ./.data/bucket:/bucket
+    command: ./api
 
   mongodb:
     image: mongo:latest

@@ -25,3 +25,11 @@ Delete bound address
 
 ##### Install Dependencies
 `go mod tidy`
+
+#### Docker
+`docker-compose watch`
+`docker-compose up`
+
+#### Local
+`make dev-api`
+`make dev-ui`
