@@ -42,6 +42,10 @@ func (a *AuthUseCase) SignUp(ctx context.Context, username, password string) err
 	pwd.Write([]byte(password))
 	pwd.Write([]byte(a.hashSalt))
 
+	// Generate salt
+	pwd.Write([]byte(a.hashSalt))
+	pwd.Write([]byte(username))
+
 	user := &models.User{
 		Username: username,
 		Password: fmt.Sprintf("%x", pwd.Sum(nil)),

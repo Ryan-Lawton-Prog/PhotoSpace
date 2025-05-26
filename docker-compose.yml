@@ -2,17 +2,33 @@ version: '3.4'
 
 services:
 
-  server:
-    image: photo-space
-    container_name: "photo-space"
-    build: ./
-    command: ./api
-    ports:
-      - 8000:8000
-    depends_on:
-      - mongodb
-    volumes:
-    - ./.data/bucket:/bucket
+  # server:
+  #   image: photo-space
+  #   container_name: "photo-space"
+  #   build: ./
+  #   command: ./api
+  #   ports:
+  #     - 8000:8000
+  #   depends_on:
+  #     - mongodb
+  #   volumes:
+  #   - ./.data/bucket:/bucket
+
+  # api:
+  #   build: ./
+  #   container_name: "photo-space-api"
+  #   ports:
+  #     - "8000:8000"
+  #   develop:
+  #     watch:
+  #       - action: rebuild
+  #         path: ./internal
+  #         target: /app
+  #   depends_on:
+  #     - mongodb
+  #   volumes:
+  #     - ./.data/bucket:/bucket
+  #   command: ./api
 
   mongodb:
     image: mongo:latest
@@ -26,3 +42,19 @@ services:
     ports:
       - 27017:27017
     command: mongod --logpath=/dev/null # --quiet
+
+  web:
+    build: ./internal/web
+    container_name: "photo-space-web"
+    ports:
+      - "3000:3000"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./internal/web
+          target: ./app
+          ignore:
+            - node_modules
+    environment:
+      VITE_API_URI: http://localhost:8000
+    command: serve dist
