@@ -35,7 +35,6 @@ function handleFileChange(event: Event) {
                 <RouterLink v-if="!auth.isAuthenticated" to="/login">Login</RouterLink>
                 <RouterLink v-if="!auth.isAuthenticated" to="/register">Register</RouterLink>
                 <RouterLink v-if="auth.isAuthenticated" to="/dashboard">Dashboard</RouterLink>
-                <RouterLink v-if="auth.isAuthenticated" to="/upload">Upload</RouterLink>
                 <RouterLink v-if="auth.isAuthenticated" to="/login" @click="logout"
                     >Logout</RouterLink
                 >
