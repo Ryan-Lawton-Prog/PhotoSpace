@@ -39,6 +39,7 @@ function handleFileChange(event: Event) {
                     >Logout</RouterLink
                 >
             </nav>
+            <div v-if="!auth.isAuthenticated"></div>
             <div v-if="auth.isAuthenticated" class ="file-upload">
                 <label for="file-input" class="file-label">
                     ➕
@@ -78,6 +79,7 @@ nav {
     font-size: 12px;
     text-align: center;
     margin-top: 2re;
+    margin-right: auto;
 }
 
 nav a.router-link-exact-active {
@@ -160,7 +162,8 @@ nav a:first-of-type {
 .wrapper {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: left;
+    justify-content: space-between;
     padding: 0 2rem;
     width: 100%;
 }
