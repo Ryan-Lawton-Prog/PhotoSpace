@@ -14,8 +14,6 @@ function logout() {
         <div class="wrapper">
             <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="25" height="25" />
             <nav>
-                <RouterLink to="/">Home</RouterLink>
-                <RouterLink to="/about">About</RouterLink>
                 <RouterLink v-if="!auth.isAuthenticated" to="/login">Login</RouterLink>
                 <RouterLink v-if="!auth.isAuthenticated" to="/register">Register</RouterLink>
                 <RouterLink v-if="auth.isAuthenticated" to="/dashboard">Dashboard</RouterLink>

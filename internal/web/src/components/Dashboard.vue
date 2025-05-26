@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 import { useAuthStore } from '../stores/auth'
 import { useImageStore } from '../stores/images'
@@ -8,21 +8,23 @@ const auth = useAuthStore()
 const images = useImageStore()
 const router = useRouter()
 
-const loading = ref<boolean>(true)
+const loading = ref<boolean>(!images.hasImages)
 
-if (!auth.isAuthenticated) {
-    router.push('/login')
-} else if (!images.hasImages) {
-    images
-        .fetchImages(auth.token as string)
+onMounted(() => {
+    if (!auth.isAuthenticated) {
+        router.push('/login')
+    } else if (!images.hasImages) {
+        images.fetchImages(auth.token as string)
         .then(() => {
-            loading.value = false
         })
         .catch((error: any) => {
             console.error('Error fetching images:', error)
+        })
+        .finally(() => {
             loading.value = false
         })
-}
+    }
+})
 
 function logout() {
     auth.set(null)
@@ -33,30 +35,24 @@ function logout() {
 <template>
     <main>
         <div class="content">
-            <div v-if="!images.hasImages">
-                <h1>Welcome to PhotoSpace</h1>
-                <p>Your personal space for managing and sharing your photos.</p>
+            <div class="loading" v-if="loading">
+                <p>Loading your photos...</p>
             </div>
-            <div v-else>
-                <div class="loading" v-if="loading">
-                    <p>Loading your photos...</p>
-                </div>
 
-                <div v-else>
-                    <div class="gallery">
-                        <div class="image" v-for="image in images.imageUrls" :key="image">
-                            <img :src="image" />
-                        </div>
+            <div v-else>
+                <div class="gallery">
+                    <div class="image" v-for="image in images.imageUrls" :key="image">
+                        <img :src="image" />
                     </div>
-                    <div v-if="!images.hasImages" class="no-images">
-                        <h1>No Images Found</h1>
-                        <p>It seems you haven't uploaded any images yet.</p>
-                        <ul>
-                            <li>Click the "Upload" button to add your first photo.</li>
-                            <li>Check back later to see your uploaded photos.</li>
-                            <li>Explore the app to discover more features.</li>
-                        </ul>
-                    </div>
+                </div>
+                <div v-if="!images.hasImages" class="no-images">
+                    <h1>No Images Found</h1>
+                    <p>It seems you haven't uploaded any images yet.</p>
+                    <ul>
+                        <li>Click the "Upload" button to add your first photo.</li>
+                        <li>Check back later to see your uploaded photos.</li>
+                        <li>Explore the app to discover more features.</li>
+                    </ul>
                 </div>
             </div>
         </div>
