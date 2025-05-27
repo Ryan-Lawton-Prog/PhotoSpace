@@ -7,7 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"ryanlawton.art/photospace/internal/app/models/user"
+	token "ryanlawton.art/photospace/internal/pkg/models"
 )
 
 type PostPhotoBody struct {
@@ -32,8 +32,8 @@ func PostPhoto(photo []byte, fileName string) error {
 		return err
 	}
 
-	user, _ := user.GetInstance()
-	req.Header.Add("Authorization", "Bearer "+string(user.JWT))
+	token, _ := token.GetInstance()
+	req.Header.Add("Authorization", "Bearer "+string(token.JWT))
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	resp, err := client.Do(req)
 	if err != nil {
