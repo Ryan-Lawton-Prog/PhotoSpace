@@ -15,7 +15,7 @@ services:
   #   - ./.data/bucket:/bucket
 
   api:
-    build: ./
+    build: ./backend
     container_name: "photo-space-api"
     ports:
       - "8000:8000"
@@ -44,7 +44,7 @@ services:
     command: mongod --logpath=/dev/null # --quiet
 
   web:
-    build: ./internal/web
+    build: ./frontend
     container_name: "photo-space-web"
     ports:
       - "3000:3000"

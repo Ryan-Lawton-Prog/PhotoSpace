@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"ryanlawton.art/photospace/internal/app/models/user"
+	token "ryanlawton.art/photospace/internal/pkg/models"
 )
 
 const (
@@ -20,7 +20,7 @@ type SignInBody struct {
 }
 
 type SignInResponse struct {
-	JWT user.JWT `json:"token"`
+	JWT token.JWT `json:"token"`
 }
 
 func SignIn(body SignInBody) (bool, error) {
@@ -32,7 +32,7 @@ func SignIn(body SignInBody) (bool, error) {
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		user, _ := user.GetInstance()
+		token, _ := token.GetInstance()
 		resBody, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
@@ -40,7 +40,7 @@ func SignIn(body SignInBody) (bool, error) {
 		}
 		respJson := SignInResponse{}
 		json.Unmarshal(resBody, &respJson)
-		user.JWT = respJson.JWT
+		token.JWT = respJson.JWT
 
 		return true, nil
 	default:

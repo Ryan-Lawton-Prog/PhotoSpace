@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"ryanlawton.art/photospace/internal/app/models/user"
+	token "ryanlawton.art/photospace/internal/pkg/models"
 )
 
 type GetIDsResponse struct {
@@ -22,8 +22,8 @@ func GetPhotoIDs() ([]string, error) {
 		return nil, err
 	}
 
-	user, _ := user.GetInstance()
-	req.Header.Add("Authorization", "Bearer "+string(user.JWT))
+	token, _ := token.GetInstance()
+	req.Header.Add("Authorization", "Bearer "+string(token.JWT))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -57,8 +57,8 @@ func GetPhoto(id string) ([]byte, error) {
 		return nil, err
 	}
 
-	user, _ := user.GetInstance()
-	req.Header.Add("Authorization", "Bearer "+string(user.JWT))
+	token, _ := token.GetInstance()
+	req.Header.Add("Authorization", "Bearer "+string(token.JWT))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -86,8 +86,8 @@ func GetPhotoThumbnail(id string) ([]byte, error) {
 		return nil, err
 	}
 
-	user, _ := user.GetInstance()
-	req.Header.Add("Authorization", "Bearer "+string(user.JWT))
+	token, _ := token.GetInstance()
+	req.Header.Add("Authorization", "Bearer "+string(token.JWT))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
