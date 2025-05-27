@@ -30,7 +30,7 @@ dev-api:
 	./utils/air -c ./backend/deployments/.air.toml
 
 dev-ui:
-	cd internal/web && npm run dev
+	cd frontend && npm run dev
 
 dev-container:
 	docker-compose watch
